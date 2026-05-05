@@ -83,9 +83,17 @@ else:
                 loaded_names.append(filename)
                 print(f"SUCCESS: Loaded '{filename}' ({len(df)} rows)")
 
+            # append user uploaded files
+            if "extra_dataframes" in st.session_state:
+                dataframes.extend(st.session_state.extra_dataframes)
+                loaded_names.extend(st.session_state.uploaded_names)
+
         except Exception as e:
             print(f"\nERROR loading files: {e}")
             sys.exit()
+
+        print(f"Total dataframes loaded: {len(dataframes)}")
+        print(f"Files: {loaded_names}")
         print("--- Loading Complete ---\n")
         
         # B. DEFINE THE RULES
@@ -125,14 +133,38 @@ else:
             sys.exit()
 
     # ==========================================
-    #  PART 3: CHAT RESPONSE
+    #  PART 3: UPLOAD CSV files
     # ==========================================
     
     # Let the user upload a file via `st.file_uploader`.
-    uploaded_file = st.file_uploader(
-        "Upload the policies (.csv)", type=("csv")
+    uploaded_files = st.file_uploader(
+        "Upload additional CSV files",
+        type=("csv"),
+        accept_multiple_files=True
     )
 
+    if uploaded_files:
+        # Process the uploaded files
+        for uploaded_file in uploaded_files:
+            # avoid re-adding the same file on every rerun
+            if uploaded_file.name not in st.session_state.get("uploaded_names", []):
+                df = pd.read_csv(uploaded_file)
+                st.session_state.agent = None  # force agent to reinitialize
+                
+                # append to dataframes and track name
+                if "extra_dataframes" not in st.session_state:
+                    st.session_state.extra_dataframes = []
+                if "uploaded_names" not in st.session_state:
+                    st.session_state.uploaded_names = []
+                
+                st.session_state.extra_dataframes.append(df)
+                st.session_state.uploaded_names.append(uploaded_file.name)
+                print(f"Uploaded: {uploaded_file.name} ({len(df)} rows)")
+
+    # ==========================================
+    #  PART 4: CHAT RESPONSE
+    # ==========================================
+    
     # Ask the user for a question via `st.text_area`.
     user_input = st.text_area(
         "Now ask a question about the policy!",
@@ -155,23 +187,3 @@ else:
         print(f"AI: {response}\n" + "-"*30)
     except Exception as e:
         print(f"An error occurred: {e}")
-
-    # if uploaded_file and question:
-    #     # Process the uploaded file and question.
-    #     document = uploaded_file.read().decode()
-    #     messages = [
-    #         {
-    #             "role": "user",
-    #             "content": f"Here's a document: {document} \n\n---\n\n {question}",
-    #         }
-    #     ]
-
-    #     # Generate an answer using the OpenAI API.
-    #     stream = client.chat.completions.create(
-    #         model="gpt-4o-mini",
-    #         messages=messages,
-    #         stream=True,
-    #     )
-
-    #     # Stream the response to the app using `st.write_stream`.
-    #     st.write_stream(stream)
