@@ -1,7 +1,6 @@
 streamlit
 pandas
-gdown
-openai
 langchain
 langchain-openai
 langchain-experimental
+requests
