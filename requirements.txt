@@ -3,4 +3,5 @@ pandas
 langchain
 langchain-openai
 langchain-experimental
+langchain-community
 requests
