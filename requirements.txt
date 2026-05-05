@@ -1,7 +1,8 @@
 streamlit
 pandas
-langchain
-langchain-openai
-langchain-experimental
-langchain-community
+tabulate
+langchain==0.3.25
+langchain-openai==0.3.16
+langchain-experimental==0.3.4
+langchain-community==0.3.24
 requests
