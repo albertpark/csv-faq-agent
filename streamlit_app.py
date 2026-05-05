@@ -55,9 +55,9 @@ else:
         print("--- Downloading Files from Github ---")
         for filename, url in files_to_download.items():
             filepath = os.path.join(DATASET_DIR, filename)
-            if not os.path.exists(filename):
+            if not os.path.exists(filepath):
                 r = requests.get(url)
-                with open(filename, "wb") as f:
+                with open(filepath, "wb") as f:
                     f.write(r.content)
                 print(f"Downloaded: {filename}")
             else:
@@ -78,7 +78,7 @@ else:
         try:
             for filename in st.session_state.files_to_download.keys():
                 filepath = os.path.join(DATASET_DIR, filename)
-                df = pd.read_csv(filename)
+                df = pd.read_csv(filepath)
                 dataframes.append(df)
                 loaded_names.append(filename)
                 print(f"SUCCESS: Loaded '{filename}' ({len(df)} rows)")
