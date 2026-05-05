@@ -70,7 +70,7 @@ else:
     # ==========================================
     #  PART 2: LOAD CSVs + INIT AGENT (ONCE)
     # ==========================================
-    if "agent" not in st.session_state:
+    if "agent" not in st.session_state or st.session_state.agent is None:
         dataframes = [] # We will store all the loaded tables here
         loaded_names = []
 
@@ -149,7 +149,13 @@ else:
             # avoid re-adding the same file on every rerun
             if uploaded_file.name not in st.session_state.get("uploaded_names", []):
                 df = pd.read_csv(uploaded_file)
-                st.session_state.agent = None  # force agent to reinitialize
+                
+                # show preview
+                st.write(f"**{uploaded_file.name}** — {len(df)} rows")
+                st.dataframe(df.head(3))
+
+                # force agent to reinitialize
+                st.session_state.agent = None  
                 
                 # append to dataframes and track name
                 if "extra_dataframes" not in st.session_state:
@@ -169,10 +175,9 @@ else:
     user_input = st.text_area(
         "Now ask a question about the policy!",
         placeholder="What are the visiting hours in the hospital?"
-        #disabled=not uploaded_file,
     )
 
-    final_query = system_prompt + "\n\nQuestion: " + user_input
+    final_query = st.session_state.system_prompt + "\n\nQuestion: " + user_input
     print("AI is thinking...")
 
     try:
@@ -181,7 +186,7 @@ else:
         # ---------------------------------------------------------
         if user_input:
             st_callback = StreamlitCallbackHandler(st.container())
-            response = agent.invoke(final_query, callbacks=[st_callback])['output']
+            response = st.session_state.agent.invoke(final_query, callbacks=[st_callback])['output']
             st.write(response)
 
         print(f"AI: {response}\n" + "-"*30)
